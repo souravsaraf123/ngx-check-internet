@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
-import axios from 'axios';
+import axios, { CancelTokenSource } from 'axios';
 
 @Injectable({
 	providedIn: 'root'
@@ -16,14 +16,25 @@ export class NgxCheckInternetService
 	private intervalId: number;
 	private lastOnlineStatus: boolean;
 
-	private REQUEST_TIMEOUT = 1000;
+	private REQUEST_TIMEOUT = 4000;
 	private MAX_NUMBER_OF_URLS = 5000;
 	private MAX_REQUEST_INDEX = 24 * 60 * 60 * 1000; // 24 hours in millis
 	private numberOfRequests = 0;
+	private axiosSource: CancelTokenSource;
 
 	constructor()
 	{
-		this.URL = ['https://raw.githubusercontent.com/microsoft/vscode/main/package.json']; // A website which has good uptime
+		// URLs of Github assets of this library itself
+		this.URL = [
+			'https://raw.githubusercontent.com/souravs-2pirad/ngx-check-internet/master/projects/ngx-check-internet/assets/0.txt',
+			'https://raw.githubusercontent.com/souravs-2pirad/ngx-check-internet/master/projects/ngx-check-internet/assets/1.txt',
+			'https://raw.githubusercontent.com/souravs-2pirad/ngx-check-internet/master/projects/ngx-check-internet/assets/2.txt',
+			'https://raw.githubusercontent.com/souravs-2pirad/ngx-check-internet/master/projects/ngx-check-internet/assets/3.txt',
+			'https://raw.githubusercontent.com/souravs-2pirad/ngx-check-internet/master/projects/ngx-check-internet/assets/4.txt',
+		];
+
+		// When server response takes time , the timeout or cancel mechanism can interrupt and abort the http request
+		// this.URL = ['https://reqres.in/api/users?delay=5'];
 		this.INTERVAL = 1 * 60 * 1000; // 1 minute
 
 		this.initialize();
@@ -138,6 +149,7 @@ export class NgxCheckInternetService
 	{
 		if (this.intervalId != null)
 		{
+			this.axiosSource.cancel('Operation canceled by the user.');
 			clearInterval(this.intervalId);
 			this.intervalId = null;
 		}
@@ -163,7 +175,7 @@ export class NgxCheckInternetService
 	// Utility
 	public checkIfOnline(): Promise<boolean>
 	{
-
+		this.axiosSource = axios.CancelToken.source();
 		if (this.numberOfRequests > this.MAX_REQUEST_INDEX)
 		{
 			this.numberOfRequests = 0;
@@ -180,6 +192,7 @@ export class NgxCheckInternetService
 			axios.get(urlToUse,
 				{
 					timeout: this.REQUEST_TIMEOUT,
+					cancelToken: this.axiosSource.token,
 				})
 				.then(res =>
 				{
