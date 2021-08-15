@@ -3,5 +3,37 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-  }
+    "ngx-check-internet": {
+      "projectType": "library",
+      "root": "projects/ngx-check-internet",
+      "sourceRoot": "projects/ngx-check-internet/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/ngx-check-internet/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ngx-check-internet/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ngx-check-internet/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/ngx-check-internet/src/test.ts",
+            "tsConfig": "projects/ngx-check-internet/tsconfig.spec.json",
+            "karmaConfig": "projects/ngx-check-internet/karma.conf.js"
+          }
+        }
+      }
+    }
+  },
+  "defaultProject": "ngx-check-internet"
 }

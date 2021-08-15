@@ -1,0 +1,15 @@
+{
+	"name": "ngx-check-internet",
+	"version": "0.0.1",
+	"peerDependencies": {
+		"@angular/common": "^9.1.1",
+		"@angular/core": "^9.1.1",
+		"axios": "^0.21.1"
+	},
+	"dependencies": {
+		"tslib": "*"
+	},
+	"scripts": {
+		"buildAndTest": "ng build ngx-check-internet && rimraf  ../../../../2pirad/Wiredscore/wiredscore-platform/web/node_modules/ngx-check-internet && cp -r ../../dist/ngx-check-internet ../../../../2pirad/Wiredscore/wiredscore-platform/web/node_modules/"
+	}
+}
