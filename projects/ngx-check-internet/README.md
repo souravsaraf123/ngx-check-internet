@@ -1,6 +1,6 @@
 # Ngx-Check-Internet (Angular v2+)
 
-> Detects whether browser has an active internet connection or not in Angular application.
+> Subscribe to internet connection changes (in browser) in Angular2+ application.
 
 ## Demo
 
