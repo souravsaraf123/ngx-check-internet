@@ -1,24 +1,117 @@
-# NgxCheckInternet
+# Ngx-Check-Internet (Angular v2+)
 
-This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.2.0.
+> Detects whether browser has an active internet connection or not in Angular application.
 
-## Code scaffolding
+## Demo
 
-Run `ng generate component component-name --project ngx-check-internet` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module --project ngx-check-internet`.
-> Note: Don't forget to add `--project ngx-check-internet` or else it will be added to the default project in your `angular.json` file. 
+**Scenario 1** : Application was toggled to offline using Chrome Dev Tools Network Tab
 
-## Build
+![Offline](assets/screenshots/offline.png)
 
-Run `ng build ngx-check-internet` to build the project. The build artifacts will be stored in the `dist/` directory.
+**Scenario 2** : Application was toggled to online using Chrome Dev Tools Network Tab
 
-## Publishing
+![Online](assets/screenshots/online.png)
 
-After building your library with `ng build ngx-check-internet`, go to the dist folder `cd dist/ngx-check-internet` and run `npm publish`.
+## Install
 
-## Running unit tests
+You can get it on npm.
 
-Run `ng test ngx-check-internet` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```
+npm install ngx-check-internet
+```
 
-## Further help
+## Usage
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+### Import module ###
+
+* Import `NgxCheckInternetModule` by adding the following to your parent module (i.e. `app.module.ts`):
+
+    ```
+    import { NgxCheckInternetModule } from 'ngx-check-internet';
+
+    @NgModule({
+      ...
+      imports: [
+        NgxCheckInternetModule,
+        ...
+      ],
+      ...
+    })
+    export class AppModule {}
+    ```
+
+### Use in Component ###
+
+1. Inject `NgxCheckInternetService` in Angular component's constructor.
+2. Call start() function, it returns a Subject which will emit a boolean whenever internet connection status is changed. Subscribe to the subject to get push notifications.
+
+```ts
+import { Component } from '@angular/core';
+import { NgxCheckInternetService } from 'ngx-check-internet';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+
+  constructor(private internetService: NgxCheckInternetService){}
+
+  ngOnInit()
+  {
+    this.internetService.setConfig({
+		interval: 3000,
+		timeout: 5000,
+	});
+
+	// Subject to subscribe
+	let liveInternetStatus = this.internetService.start();
+	liveInternetStatus.subscribe(
+		(response) =>
+		{
+			let isOnline = (response == true);
+			let message = '';
+			if (isOnline)
+			{
+				message = 'You are Online';
+			}
+			else
+			{
+				message = 'Connection Lost';
+			}
+			console.log(`Internet Status Changed. ${message}`);
+		},
+		(error) =>
+		{
+			console.error('NgxInternetService Subscription Error: ',error);
+		}
+	);
+  }
+
+}
+```
+
+## Configuration
+
+```ts
+this.internetService.setConfig({
+	// The interval of time in milliseconds after which the urls will be fetched to get internet status. Default is 60000 (1 minute)
+	interval: 3000,
+
+	// The time in milliseconds after which http requests will be aborted (timed out) and internet status becomes false. Default value is 1000
+	timeout: 5000,
+
+	// a string[] which can contain upto 5000 urls. These urls are fetched (one url after) and a success http response indicates you are online.
+	// Default value is an array of 5 urls from this github repository
+	urls: [
+		'https://raw.githubusercontent.com/souravs-2piradngx-check-internet/master/projects/ngx-check-internet/assets0.txt',
+		'https://raw.githubusercontent.com/souravs-2piradngx-check-internet/master/projects/ngx-check-internet/assets1.txt',
+	]
+});
+```
+
+
+## License
+
+[MIT License](https://github.com/souravs-2pirad/ngx-check-internet/blob/master/LICENSE) © Sourav Saraf
