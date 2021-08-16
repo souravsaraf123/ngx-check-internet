@@ -86,6 +86,7 @@ export class NgxCheckInternetService
 			// If user is online
 			if (navigator.onLine)
 			{
+				this.checkStatusAndEmit();
 				this.startNgxInterval();
 			}
 			// If user is offline , then emit false
@@ -118,6 +119,7 @@ export class NgxCheckInternetService
 	{
 		if (this.isStarted)
 		{
+			this.checkStatusAndEmit();
 			this.startNgxInterval();
 		}
 	}
@@ -127,29 +129,31 @@ export class NgxCheckInternetService
 		return this.lastOnlineStatus;
 	}
 
-	private startNgxInterval()
+	private checkStatusAndEmit()
 	{
-		// Check if really online via http request
-		this.intervalId = setInterval(() => 
-		{
-			this.checkIfOnline()
-				.then(status =>
+		this.checkIfOnline()
+			.then(status =>
+			{
+				if (this.lastOnlineStatus == null)
 				{
-					if (this.lastOnlineStatus == null)
+					this.lastOnlineStatus = status;
+					this.getOnlineStatus.next(this.lastOnlineStatus);
+				}
+				else
+				{
+					if (status != this.lastOnlineStatus)
 					{
 						this.lastOnlineStatus = status;
 						this.getOnlineStatus.next(this.lastOnlineStatus);
 					}
-					else
-					{
-						if (status != this.lastOnlineStatus)
-						{
-							this.lastOnlineStatus = status;
-							this.getOnlineStatus.next(this.lastOnlineStatus);
-						}
-					}
-				});
-		}, this.INTERVAL);
+				}
+			});
+	}
+
+	private startNgxInterval()
+	{
+		// Check if really online via http request
+		this.intervalId = setInterval(this.checkStatusAndEmit, this.INTERVAL);
 	}
 
 	private clearNgxInterval()
