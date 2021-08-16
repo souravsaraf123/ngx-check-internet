@@ -16,7 +16,7 @@ export class NgxCheckInternetService
 	private intervalId: number;
 	private lastOnlineStatus: boolean;
 
-	private REQUEST_TIMEOUT = 4000;
+	private REQUEST_TIMEOUT = 1000;
 	private MAX_NUMBER_OF_URLS = 5000;
 	private MAX_REQUEST_INDEX = 24 * 60 * 60 * 1000; // 24 hours in millis
 	private numberOfRequests = 0;
@@ -48,9 +48,11 @@ export class NgxCheckInternetService
 		this.intervalId = null;
 		this.lastOnlineStatus = null;
 		this.numberOfRequests = 0;
+
+		this.axiosSource = axios.CancelToken.source();
 	}
 
-	public setConfig(configuration: { urls?: string[], interval?: number })
+	public setConfig(configuration: { urls?: string[], interval?: number, timeout?: number })
 	{
 		if (this.isStarted)
 		{
@@ -58,8 +60,13 @@ export class NgxCheckInternetService
 		}
 		else
 		{
-			this.URL = configuration.urls?.slice(0, this.MAX_NUMBER_OF_URLS) ?? this.URL;
+			if (configuration.urls && Array.isArray(configuration.urls) && configuration.urls.length > 0)
+			{
+				this.URL = configuration.urls.slice(0, this.MAX_NUMBER_OF_URLS);
+			}
+
 			this.INTERVAL = configuration.interval ?? this.INTERVAL;
+			this.REQUEST_TIMEOUT = configuration.timeout ?? this.REQUEST_TIMEOUT;
 		}
 	}
 
@@ -175,13 +182,12 @@ export class NgxCheckInternetService
 	// Utility
 	public checkIfOnline(): Promise<boolean>
 	{
-		this.axiosSource = axios.CancelToken.source();
 		if (this.numberOfRequests > this.MAX_REQUEST_INDEX)
 		{
 			this.numberOfRequests = 0;
 		}
-
 		this.numberOfRequests++;
+
 		let urlIndex = (this.numberOfRequests % this.URL.length);
 
 		let urlToUse = `${this.URL[urlIndex]}?cache_bust=${Date.now()}`;
