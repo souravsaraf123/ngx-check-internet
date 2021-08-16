@@ -6,11 +6,11 @@
 
 **Scenario 1** : Application was toggled to offline using Chrome Dev Tools Network Tab
 
-![Offline](assets/screenshots/offline.png)
+![Offline](projects/ngx-check-internet/assets/screenshots/offline.png)
 
 **Scenario 2** : Application was toggled to online using Chrome Dev Tools Network Tab
 
-![Online](assets/screenshots/online.png)
+![Online](projects/ngx-check-internet/assets/screenshots/online.png)
 
 ## Install
 
