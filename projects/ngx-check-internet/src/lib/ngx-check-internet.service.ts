@@ -80,8 +80,8 @@ export class NgxCheckInternetService
 				this.getOnlineStatus = new Subject<boolean>();
 			}
 
-			window.addEventListener('offline', this.navigatorOfflineListener.bind(this));
-			window.addEventListener('online', this.navigatorOnlineListener.bind(this));
+			window.addEventListener('offline', this.navigatorOfflineListener);
+			window.addEventListener('online', this.navigatorOnlineListener);
 
 			// If user is online
 			if (navigator.onLine)
@@ -100,7 +100,7 @@ export class NgxCheckInternetService
 		return this.getOnlineStatus;
 	}
 
-	private navigatorOfflineListener(e: Event)
+	private navigatorOfflineListener = (e: Event) =>
 	{
 		if (this.isStarted)
 		{
@@ -115,7 +115,7 @@ export class NgxCheckInternetService
 		}
 	}
 
-	private navigatorOnlineListener(e: Event)
+	private navigatorOnlineListener = (e: Event) =>
 	{
 		if (this.isStarted)
 		{
@@ -129,25 +129,59 @@ export class NgxCheckInternetService
 		return this.lastOnlineStatus;
 	}
 
-	private checkStatusAndEmit()
+	public checkIfOnline(): Promise<boolean>
 	{
-		this.checkIfOnline()
-			.then(status =>
+		if (this.numberOfRequests > this.MAX_REQUEST_INDEX)
+		{
+			this.numberOfRequests = 0;
+		}
+		this.numberOfRequests++;
+
+		let urlIndex = (this.numberOfRequests % this.URL.length);
+		let urlToUse = this.URL[urlIndex];
+
+		let p = new Promise<boolean>(resolve =>
+		{
+			axios.get(urlToUse,
+				{
+					timeout: this.REQUEST_TIMEOUT,
+					cancelToken: this.axiosSource.token,
+					params: {
+						cache_bust: Date.now().toString(),
+					},
+				})
+				.then(res =>
+				{
+					let result = (res.status == 200);
+					resolve(result);
+				})
+				.catch((error) =>
+				{
+					resolve(false);
+				});
+		});
+
+		return p;
+	}
+
+	private checkStatusAndEmit = () =>
+	{
+		this.checkIfOnline().then(status =>
+		{
+			if (this.lastOnlineStatus == null)
 			{
-				if (this.lastOnlineStatus == null)
+				this.lastOnlineStatus = status;
+				this.getOnlineStatus.next(this.lastOnlineStatus);
+			}
+			else
+			{
+				if (status != this.lastOnlineStatus)
 				{
 					this.lastOnlineStatus = status;
 					this.getOnlineStatus.next(this.lastOnlineStatus);
 				}
-				else
-				{
-					if (status != this.lastOnlineStatus)
-					{
-						this.lastOnlineStatus = status;
-						this.getOnlineStatus.next(this.lastOnlineStatus);
-					}
-				}
-			});
+			}
+		});
 	}
 
 	private startNgxInterval()
@@ -161,6 +195,7 @@ export class NgxCheckInternetService
 		if (this.intervalId != null)
 		{
 			this.axiosSource.cancel('Operation canceled by the user.');
+			this.axiosSource = axios.CancelToken.source();
 			clearInterval(this.intervalId);
 			this.intervalId = null;
 		}
@@ -181,40 +216,5 @@ export class NgxCheckInternetService
 			window.removeEventListener('offline', this.navigatorOfflineListener);
 			window.removeEventListener('online', this.navigatorOnlineListener);
 		}
-	}
-
-	// Utility
-	public checkIfOnline(): Promise<boolean>
-	{
-		if (this.numberOfRequests > this.MAX_REQUEST_INDEX)
-		{
-			this.numberOfRequests = 0;
-		}
-		this.numberOfRequests++;
-
-		let urlIndex = (this.numberOfRequests % this.URL.length);
-
-		let urlToUse = `${this.URL[urlIndex]}?cache_bust=${Date.now()}`;
-
-		let p = new Promise<boolean>(resolve =>
-		{
-
-			axios.get(urlToUse,
-				{
-					timeout: this.REQUEST_TIMEOUT,
-					cancelToken: this.axiosSource.token,
-				})
-				.then(res =>
-				{
-					let result = (res.status == 200);
-					resolve(result);
-				})
-				.catch((error) =>
-				{
-					resolve(false);
-				});
-		});
-
-		return p;
 	}
 }
