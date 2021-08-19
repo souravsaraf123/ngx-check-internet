@@ -129,6 +129,19 @@ export class NgxCheckInternetService
 		return this.lastOnlineStatus;
 	}
 
+	public getLiveStatus(): Subject<boolean>
+	{
+		if (this.isStarted)
+		{
+			return this.getOnlineStatus;
+		}
+		else
+		{
+			console.error('You need to start() to get live online status');
+			return null;
+		}
+	}
+
 	public checkIfOnline(): Promise<boolean>
 	{
 		if (this.numberOfRequests > this.MAX_REQUEST_INDEX)
