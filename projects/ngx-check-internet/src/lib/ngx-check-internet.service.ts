@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import axios, { CancelTokenSource } from 'axios';
 
 @Injectable({
@@ -10,7 +10,7 @@ export class NgxCheckInternetService
 	URL: string[];
 	INTERVAL: number;
 
-	private getOnlineStatus: Subject<boolean>;
+	private getOnlineStatus: BehaviorSubject<boolean>;
 
 	private isStarted: boolean;
 	private intervalId: number;
@@ -42,7 +42,7 @@ export class NgxCheckInternetService
 
 	private initialize()
 	{
-		this.getOnlineStatus = new Subject<boolean>();
+		this.getOnlineStatus = new BehaviorSubject<boolean>(null);
 
 		this.isStarted = false;
 		this.intervalId = null;
@@ -70,14 +70,14 @@ export class NgxCheckInternetService
 		}
 	}
 
-	public start(): Subject<boolean>
+	public start(): BehaviorSubject<boolean>
 	{
 		if (!this.isStarted)
 		{
 			this.isStarted = true;
 			if (this.getOnlineStatus.closed)
 			{
-				this.getOnlineStatus = new Subject<boolean>();
+				this.getOnlineStatus = new BehaviorSubject<boolean>(null);
 			}
 
 			window.addEventListener('offline', this.navigatorOfflineListener);
@@ -129,7 +129,7 @@ export class NgxCheckInternetService
 		return this.lastOnlineStatus;
 	}
 
-	public getLiveStatus(): Subject<boolean>
+	public getLiveStatus(): BehaviorSubject<boolean>
 	{
 		if (this.isStarted)
 		{
