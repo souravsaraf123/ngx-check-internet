@@ -218,7 +218,7 @@ export class NgxCheckInternetService
 	{
 		if (this.isStarted)
 		{
-			this.getOnlineStatus.complete();
+			this.getOnlineStatus.unsubscribe();
 
 			this.clearNgxInterval();
 			this.intervalId = null;
