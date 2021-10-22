@@ -124,6 +124,11 @@ export class NgxCheckInternetService
 		}
 	}
 
+	public getIsStarted()
+	{
+		return this.isStarted;
+	}
+
 	public getLastOnlineStatus()
 	{
 		return this.lastOnlineStatus;
